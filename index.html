@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fermacity - ¡Despacha rápido, Fernanda!</title>
+    <title>Fermacity - ¡Atiende Fernanda!</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background: #e0f2fe; display: flex; flex-direction: column; align-items: center; padding: 10px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #e0f2fe; display: flex; flex-direction: column; align-items: center; padding: 10px; min-height: 100vh; }
         h1 { color: #0284c7; margin-bottom: 10px; font-size: 1.5rem; text-align: center; }
         
         #game-board {
@@ -17,21 +17,36 @@
             border-radius: 12px;
             padding: 15px;
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            position: relative;
         }
 
         #hud {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 5px;
             background: #0284c7;
             color: white;
             padding: 10px;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             text-align: center;
             margin-bottom: 15px;
+            align-items: center;
         }
+
+        .btn-pause {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.2s;
+        }
+        .btn-pause:hover { background: #d97706; }
 
         .main-stage {
             display: grid;
@@ -71,10 +86,16 @@
             text-align: center;
             font-weight: 600;
             color: #0369a1;
-            transition: all 0.1s;
+            transition: all 0.2s;
         }
 
         .med-btn:active { background: #38bdf8; color: white; transform: scale(0.96); }
+
+        /* Animación de cambio de estante */
+        .med-btn.changing {
+            opacity: 0.2;
+            transform: scale(0.8);
+        }
 
         /* Fila de clientes */
         #customers-container {
@@ -93,6 +114,11 @@
             flex-direction: column;
             gap: 6px;
             cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .customer-card:active {
+            transform: scale(0.98);
         }
 
         .customer-info {
@@ -128,6 +154,35 @@
             color: #334155;
             border: 1px dashed #94a3b8;
         }
+
+        /* Modal de Pausa */
+        #pause-overlay {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.75);
+            border-radius: 12px;
+            z-index: 10;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+        }
+        #pause-overlay h2 { font-size: 2rem; margin-bottom: 15px; }
+
+        /* Pie de página */
+        footer {
+            margin-top: 15px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-align: center;
+        }
+        .creator-text {
+            background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981, #06b6d4, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 0.85rem;
+        }
     </style>
 </head>
 <body>
@@ -135,11 +190,18 @@
     <h1>💊 Fermacity: ¡Atiende Fernanda!</h1>
 
     <div id="game-board">
+        <!-- Pantalla de Pausa -->
+        <div id="pause-overlay">
+            <h2>⏸️ JUEGO EN PAUSA</h2>
+            <button class="btn-pause" style="padding: 10px 20px; font-size: 1rem;" onclick="togglePause()">Reanudar</button>
+        </div>
+
         <div id="hud">
             <div>Nivel: <span id="level">1</span>/100</div>
             <div>Puntos: <span id="score">0</span></div>
             <div>Atendidos: <span id="served">0</span></div>
             <div>Perdidos: <span id="lost" style="color: #fca5a5;">0</span></div>
+            <div><button class="btn-pause" onclick="togglePause()" id="pause-btn">Pausa ⏸️</button></div>
         </div>
 
         <div class="main-stage">
@@ -159,29 +221,53 @@
         </div>
     </div>
 
+    <footer>
+        <span class="creator-text">Creado por Dani v1</span>
+    </footer>
+
     <script>
-        // Banco de medicamentos organizados por dificultad (bloques de 10 niveles)
+        // Banco de medicamentos organizados por dificultad (bloques de 5 niveles)
         const medPools = [
-            // Niveles 1-10
+            // Niveles 1-5
             ["Paracetamol", "Amoxicilina", "Lorazepam", "Ibuprofeno", "Amlodipino"],
-            // Niveles 11-20
+            // Niveles 6-10
             ["Atorvastatina", "Levotiroxina", "Telmisartán", "Gliclazida", "Clonazepam"],
-            // Niveles 21-30
+            // Niveles 11-15
             ["Hidroclorotiazida", "Ciprofloxacino", "Metoclopramida", "Ezetimiba"],
-            // Niveles 31-40
+            // Niveles 16-20
             ["Sulfametoxazol", "Nitrofurantoína", "Levosulpirida", "Dexketoprofeno"],
-            // Niveles 41-50
+            // Niveles 21-25
             ["Dextrometorfano", "Clufenanamato", "Butilhioscina", "Betametasona"],
-            // Niveles 51-60
+            // Niveles 26-30
             ["Dexmedetomidina", "Levetiracetam", "Pipemídico Ácido", "Moxifloxacino"],
-            // Niveles 61-70
+            // Niveles 31-35
             ["Eslicarbazepina", "Acetilcisteína", "Fondaparinux", "Cloperastina"],
-            // Niveles 71-80
+            // Niveles 36-40
             ["Piperacilina-Tazobactam", "Trimetoprima", "Suxametonio", "Zuclopentixol"],
-            // Niveles 81-90
+            // Niveles 41-45
             ["Lercanidipino", "Sildenafil-Tadalafil", "Fenilbutazona", "Trihexifenidilo"],
-            // Niveles 91-100 (Extremos)
-            ["Clanobutina", "Metilprednisolona", "Ciclofosfamidasa", "Desoximetasona"]
+            // Niveles 46-50
+            ["Clanobutina", "Metilprednisolona", "Ciclofosfamidasa", "Desoximetasona"],
+            // Niveles 51-55
+            ["Cianocobalamina", "Anfotericina B", "Fludarabina", "Etopósido"],
+            // Niveles 56-60
+            ["Levomepromazina", "Oxcarbazepina", "Pargilina", "Ganciclovir"],
+            // Niveles 61-65
+            ["Teriparatida", "Lacosamida", "Cromoglicato", "Cabergolina"],
+            // Niveles 66-70
+            ["Melfalán", "Clormadinona", "Mitomicina", "Fludarabina"],
+            // Niveles 71-75
+            ["Sulfasalazina", "Nintedanib", "Secukinumab", "Eculizumab"],
+            // Niveles 76-80
+            ["Vedolizumab", "Tofacitinib", "Brodalumab", "Ixekizumab"],
+            // Niveles 81-85
+            ["Idarucizumab", "Sugammadex", "Evolocumab", "Alirocumab"],
+            // Niveles 86-90
+            ["Crizotinib", "Ceritinib", "Alectinib", "Brigatinib"],
+            // Niveles 91-95
+            ["Osimertinib", "Gefitinib", "Erlotinib", "Afatinib"],
+            // Niveles 96-100 (Súper complejos)
+            ["Pembrolizumab", "Nivolumab", "Atezolizumab", "Durvalumab"]
         ];
 
         let currentLevel = 1;
@@ -191,25 +277,33 @@
         let holding = null;
         let customers = [];
         let customerIdCounter = 0;
+        let isPaused = false;
 
         let availableMeds = [];
+        let displayedMeds = [];
 
         function updateAvailableMeds() {
-            // Se calcula qué bloques desbloquear según el nivel
-            const tier = Math.min(Math.floor((currentLevel - 1) / 10) + 1, medPools.length);
+            // Se calcula qué bloques desbloquear según el nivel (cada 5 niveles)
+            const tier = Math.min(Math.floor((currentLevel - 1) / 5) + 1, medPools.length);
             availableMeds = [];
             for (let i = 0; i < tier; i++) {
                 availableMeds = availableMeds.concat(medPools[i]);
             }
+            shuffleShelves();
+        }
+
+        // Mezcla y actualiza el estante
+        function shuffleShelves() {
+            displayedMeds = [...availableMeds].sort(() => Math.random() - 0.5);
             renderShelves();
         }
 
         function renderShelves() {
             const shelvesEl = document.getElementById('shelves');
             shelvesEl.innerHTML = '';
-            document.getElementById('med-count').innerText = availableMeds.length;
+            document.getElementById('med-count').innerText = displayedMeds.length;
 
-            availableMeds.forEach(med => {
+            displayedMeds.forEach(med => {
                 const btn = document.createElement('button');
                 btn.className = 'med-btn';
                 btn.innerText = med;
@@ -218,18 +312,37 @@
             });
         }
 
+        // Hace aparecer/desaparecer (rotar posición) de medicamentos de forma dinámica
+        function dynamicShelfShift() {
+            if (isPaused) return;
+            const btns = document.querySelectorAll('.med-btn');
+            if (btns.length === 0) return;
+
+            const randomIndex = Math.floor(Math.random() * btns.length);
+            const btn = btns[randomIndex];
+            
+            btn.classList.add('changing');
+            setTimeout(() => {
+                shuffleShelves();
+            }, 300);
+        }
+
         function pickMed(med) {
+            if (isPaused) return;
             holding = med;
             document.getElementById('holding-item').innerText = med;
         }
 
         function spawnCustomer() {
-            if (customers.length >= 4) return; // Máximo 4 clientes a la vez
+            if (isPaused) return;
+
+            // Múltiples clientes desde el inicio (Máximo 4)
+            if (customers.length >= 4) return;
 
             const randomMed = availableMeds[Math.floor(Math.random() * availableMeds.length)];
             
-            // A mayor nivel, menos tiempo de paciencia (mínimo 4.5 segundos)
-            const baseTime = Math.max(12 - (currentLevel * 0.08), 4.5);
+            // Reducción de tiempo por nivel
+            const baseTime = Math.max(12 - (currentLevel * 0.08), 3.5);
 
             const customer = {
                 id: ++customerIdCounter,
@@ -258,7 +371,7 @@
 
                 card.innerHTML = `
                     <div class="customer-info">
-                        <span>👤 Cliente:</span>
+                        <span>👤 Cliente solicita:</span>
                         <span style="color:#d97706">${c.med}</span>
                     </div>
                     <div class="timer-bar">
@@ -270,7 +383,7 @@
         }
 
         function serveCustomer(id) {
-            if (!holding) return;
+            if (isPaused || !holding) return;
 
             const index = customers.findIndex(c => c.id === id);
             if (index === -1) return;
@@ -305,8 +418,16 @@
             document.getElementById('lost').innerText = lostCount;
         }
 
+        function togglePause() {
+            isPaused = !isPaused;
+            document.getElementById('pause-overlay').style.display = isPaused ? 'flex' : 'none';
+            document.getElementById('pause-btn').innerText = isPaused ? 'Reanudar ▶️' : 'Pausa ⏸️';
+        }
+
         // Bucle principal del temporizador
         setInterval(() => {
+            if (isPaused) return;
+
             for (let i = customers.length - 1; i >= 0; i--) {
                 customers[i].timeRight -= 0.1;
                 if (customers[i].timeRight <= 0) {
@@ -319,9 +440,9 @@
             renderCustomers();
         }, 100);
 
-        // La velocidad con la que llegan nuevos clientes se incrementa con el nivel
+        // La velocidad con la que llegan nuevos clientes
         function getSpawnInterval() {
-            return Math.max(1200, 3500 - (currentLevel * 25));
+            return Math.max(1000, 3000 - (currentLevel * 20));
         }
 
         function scheduleNextSpawn() {
@@ -331,9 +452,15 @@
             }, getSpawnInterval());
         }
 
-        // Inicialización del juego
+        // Rotación aleatoria de productos en el estante
+        setInterval(dynamicShelfShift, 4000);
+
+        // Inicialización del juego con múltiples clientes
         updateAvailableMeds();
         updateHUD();
+        spawnCustomer();
+        spawnCustomer();
+        spawnCustomer();
         scheduleNextSpawn();
     </script>
 </body>
