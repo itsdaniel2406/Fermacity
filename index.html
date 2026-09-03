@@ -6,36 +6,36 @@
     <title>Fermacity - ¡Atiende Fernanda!</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #e0f2fe; display: flex; flex-direction: column; align-items: center; padding: 10px; min-height: 100vh; }
-        h1 { color: #0284c7; margin-bottom: 10px; font-size: 1.4rem; text-align: center; }
+        body { background: #e0f2fe; display: flex; flex-direction: column; align-items: center; padding: 6px; min-height: 100vh; }
+        h1 { color: #0284c7; margin-bottom: 6px; font-size: 1.1rem; text-align: center; }
         
         #game-board {
             width: 100%;
-            max-width: 850px;
+            max-width: 800px;
             background: #ffffff;
-            border: 4px solid #0284c7;
-            border-radius: 12px;
-            padding: 12px;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            border: 3px solid #0284c7;
+            border-radius: 10px;
+            padding: 8px;
+            box-shadow: 0 6px 12px -2px rgba(0,0,0,0.1);
             position: relative;
         }
 
-        /* HUD Compacto con Números Arriba y Texto Abajo */
+        /* HUD Ultra Compacto */
         #hud {
             display: grid;
             grid-template-columns: repeat(6, 1fr) auto;
-            gap: 6px;
+            gap: 4px;
             background: #0284c7;
-            padding: 8px;
-            border-radius: 8px;
-            margin-bottom: 12px;
+            padding: 5px;
+            border-radius: 6px;
+            margin-bottom: 8px;
             align-items: center;
         }
 
         .hud-card {
             background: rgba(255, 255, 255, 0.15);
-            border-radius: 6px;
-            padding: 4px 2px;
+            border-radius: 4px;
+            padding: 2px 1px;
             text-align: center;
             color: white;
             display: flex;
@@ -45,17 +45,17 @@
         }
 
         .hud-value {
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             font-weight: 800;
-            line-height: 1.1;
+            line-height: 1;
         }
 
         .hud-label {
-            font-size: 0.65rem;
+            font-size: 0.55rem;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
-            opacity: 0.9;
-            margin-top: 2px;
+            letter-spacing: 0.2px;
+            opacity: 0.95;
+            margin-top: 1px;
             font-weight: 600;
         }
 
@@ -63,11 +63,11 @@
             background: #f59e0b;
             color: white;
             border: none;
-            padding: 6px 10px;
-            border-radius: 6px;
+            padding: 4px 8px;
+            border-radius: 4px;
             font-weight: bold;
             cursor: pointer;
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             transition: background 0.2s;
             height: 100%;
             display: flex;
@@ -85,14 +85,14 @@
             }
             .btn-pause {
                 width: 100%;
-                padding: 6px;
+                padding: 4px;
             }
         }
 
         .main-stage {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 8px;
         }
 
         @media(max-width: 600px) {
@@ -102,10 +102,10 @@
         .section-title {
             font-weight: bold;
             color: #0369a1;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             border-bottom: 2px solid #bae6fd;
-            padding-bottom: 4px;
-            font-size: 0.9rem;
+            padding-bottom: 2px;
+            font-size: 0.75rem;
         }
 
         /* Banner de Bonus Track */
@@ -115,10 +115,10 @@
             color: white;
             text-align: center;
             font-weight: bold;
-            padding: 5px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            font-size: 0.85rem;
+            padding: 3px;
+            border-radius: 4px;
+            margin-bottom: 6px;
+            font-size: 0.7rem;
             animation: pulse 1s infinite alternate;
         }
 
@@ -127,22 +127,22 @@
             to { transform: scale(1.01); }
         }
 
-        /* Estantería optimizada */
+        /* Estantería optimizada y compacta */
         .med-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 6px;
-            max-height: 340px;
+            gap: 4px;
+            max-height: 280px;
             overflow: hidden;
         }
 
         .med-btn {
             background: #f0f9ff;
-            border: 2px solid #38bdf8;
-            border-radius: 6px;
-            padding: 7px 4px;
+            border: 1.5px solid #38bdf8;
+            border-radius: 4px;
+            padding: 5px 2px;
             cursor: pointer;
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             text-align: center;
             font-weight: 600;
             color: #0369a1;
@@ -167,18 +167,18 @@
         #customers-container {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            min-height: 180px;
+            gap: 5px;
+            min-height: 140px;
         }
 
         .customer-card {
             background: #fffbebfb;
-            border: 2px solid #f59e0b;
-            border-radius: 8px;
-            padding: 8px 10px;
+            border: 1.5px solid #f59e0b;
+            border-radius: 6px;
+            padding: 5px 8px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 3px;
             cursor: pointer;
             transition: transform 0.1s;
         }
@@ -190,15 +190,15 @@
         .customer-info {
             display: flex;
             justify-content: space-between;
-            font-size: 0.8rem;
+            font-size: 0.68rem;
             font-weight: bold;
         }
 
         .timer-bar {
             width: 100%;
-            height: 6px;
+            height: 5px;
             background: #e5e7eb;
-            border-radius: 4px;
+            border-radius: 3px;
             overflow: hidden;
         }
 
@@ -211,13 +211,13 @@
 
         /* Status de Fernanda */
         #hand-status {
-            margin-top: 12px;
+            margin-top: 8px;
             background: #f1f5f9;
-            padding: 8px;
-            border-radius: 8px;
+            padding: 5px;
+            border-radius: 6px;
             text-align: center;
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.72rem;
             color: #334155;
             border: 1px dashed #94a3b8;
         }
@@ -228,31 +228,31 @@
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(15, 23, 42, 0.85);
-            border-radius: 12px;
+            border-radius: 10px;
             z-index: 10;
             justify-content: center;
             align-items: center;
             flex-direction: column;
             color: white;
-            padding: 20px;
+            padding: 15px;
             text-align: center;
         }
-        .modal-overlay h2 { font-size: 1.6rem; margin-bottom: 10px; }
-        .modal-overlay p { margin-bottom: 15px; font-size: 0.95rem; }
+        .modal-overlay h2 { font-size: 1.3rem; margin-bottom: 8px; }
+        .modal-overlay p { margin-bottom: 12px; font-size: 0.8rem; }
 
         /* Pop-up flotante de EXP Bonus */
         #exp-popup {
             display: none;
             position: absolute;
-            bottom: 50px;
+            bottom: 40px;
             left: 50%;
             transform: translateX(-50%);
             background: #22c55e;
             color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
+            padding: 4px 10px;
+            border-radius: 15px;
             font-weight: bold;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             animation: floatUp 1s ease-out;
             z-index: 5;
@@ -260,13 +260,13 @@
 
         @keyframes floatUp {
             0% { opacity: 1; transform: translate(-50%, 0); }
-            100% { opacity: 0; transform: translate(-50%, -30px); }
+            100% { opacity: 0; transform: translate(-50%, -25px); }
         }
 
         /* Pie de página */
         footer {
-            margin-top: 12px;
-            font-size: 0.75rem;
+            margin-top: 8px;
+            font-size: 0.65rem;
             font-weight: bold;
             text-align: center;
         }
@@ -274,7 +274,7 @@
             background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981, #06b6d4, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
         }
     </style>
 </head>
@@ -286,7 +286,7 @@
         <!-- Modal de Pausa -->
         <div id="pause-overlay" class="modal-overlay">
             <h2>⏸️ JUEGO EN PAUSA</h2>
-            <button class="btn-pause" style="padding: 10px 20px; font-size: 1rem;" onclick="togglePause()">Reanudar</button>
+            <button class="btn-pause" style="padding: 8px 16px; font-size: 0.85rem;" onclick="togglePause()">Reanudar</button>
         </div>
 
         <!-- Modal de Derrota / Reintento -->
@@ -294,12 +294,12 @@
             <h2 id="go-title" style="color: #ef4444;">❌ ¡HAS PERDIDO!</h2>
             <p id="go-reason">Has acumulado demasiados errores.</p>
             <p id="go-attempts" style="font-weight: bold; color: #f59e0b;">Reintentos restantes en este nivel: 2</p>
-            <button class="btn-pause" id="go-btn" style="padding: 10px 20px; font-size: 1rem;" onclick="handleGameOverAction()">Reintentar Nivel</button>
+            <button class="btn-pause" id="go-btn" style="padding: 8px 16px; font-size: 0.85rem;" onclick="handleGameOverAction()">Reintentar Nivel</button>
         </div>
 
         <div id="exp-popup">⭐ ¡PRODUCTO ESTRELLA! +50% Puntos ⭐</div>
 
-        <!-- HUD Rediseñado: Números Arriba / Texto Abajo + Iconos -->
+        <!-- HUD Ultra Compacto -->
         <div id="hud">
             <div class="hud-card">
                 <span class="hud-value">🏆 <span id="level">1</span>/100</span>
