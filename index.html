@@ -11,7 +11,7 @@
         
         #game-board {
             width: 100%;
-            max-width: 800px;
+            max-width: 850px;
             background: #ffffff;
             border: 4px solid #0284c7;
             border-radius: 12px;
@@ -22,8 +22,8 @@
 
         #hud {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 5px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
             background: #0284c7;
             color: white;
             padding: 10px;
@@ -32,6 +32,11 @@
             font-size: 0.8rem;
             text-align: center;
             margin-bottom: 15px;
+        }
+
+        .hud-row {
+            display: flex;
+            justify-content: space-around;
             align-items: center;
         }
 
@@ -56,6 +61,7 @@
 
         @media(max-width: 600px) {
             .main-stage { grid-template-columns: 1fr; }
+            #hud { grid-template-columns: 1fr; }
         }
 
         .section-title {
@@ -179,20 +185,46 @@
             border: 1px dashed #94a3b8;
         }
 
-        /* Modal de Pausa */
-        #pause-overlay {
+        /* Modales de Pausa y Game Over */
+        .modal-overlay {
             display: none;
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 23, 42, 0.75);
+            background: rgba(15, 23, 42, 0.85);
             border-radius: 12px;
             z-index: 10;
             justify-content: center;
             align-items: center;
             flex-direction: column;
             color: white;
+            padding: 20px;
+            text-align: center;
         }
-        #pause-overlay h2 { font-size: 2rem; margin-bottom: 15px; }
+        .modal-overlay h2 { font-size: 1.8rem; margin-bottom: 10px; }
+        .modal-overlay p { margin-bottom: 15px; font-size: 1rem; }
+
+        /* Pop-up flotante de EXP Bonus */
+        #exp-popup {
+            display: none;
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #22c55e;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: floatUp 1s ease-out;
+            z-index: 5;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translate(-50%, 0); }
+            100% { opacity: 0; transform: translate(-50%, -30px); }
+        }
 
         /* Pie de página */
         footer {
@@ -214,17 +246,36 @@
     <h1>💊 Fermacity: ¡Atiende Fernanda!</h1>
 
     <div id="game-board">
-        <div id="pause-overlay">
+        <!-- Modal de Pausa -->
+        <div id="pause-overlay" class="modal-overlay">
             <h2>⏸️ JUEGO EN PAUSA</h2>
             <button class="btn-pause" style="padding: 10px 20px; font-size: 1rem;" onclick="togglePause()">Reanudar</button>
         </div>
 
+        <!-- Modal de Derrota / Reintento -->
+        <div id="gameover-overlay" class="modal-overlay">
+            <h2 id="go-title" style="color: #ef4444;">❌ ¡HAS PERDIDO!</h2>
+            <p id="go-reason">Has acumulado demasiados errores.</p>
+            <p id="go-attempts" style="font-weight: bold; color: #f59e0b;">Reintentos restantes en este nivel: 2</p>
+            <button class="btn-pause" id="go-btn" style="padding: 10px 20px; font-size: 1rem;" onclick="handleGameOverAction()">Reintentar Nivel</button>
+        </div>
+
+        <div id="exp-popup">⭐ ¡PRODUCTO ESTRELLA! +50% Puntos ⭐</div>
+
         <div id="hud">
-            <div>Nivel: <span id="level">1</span>/100</div>
-            <div>Puntos: <span id="score">0</span></div>
-            <div>Atendidos: <span id="served">0</span></div>
-            <div>Perdidos: <span id="lost" style="color: #fca5a5;">0</span></div>
-            <div><button class="btn-pause" onclick="togglePause()" id="pause-btn">Pausa ⏸️</button></div>
+            <div>
+                <div>Nivel: <span id="level">1</span>/100</div>
+                <div>Puntos: <span id="score">0</span></div>
+            </div>
+            <div>
+                <div>Atendidos: <span id="served">0</span></div>
+                <div>Reintentos: <span id="retries" style="color: #f59e0b;">2</span>/2</div>
+            </div>
+            <div>
+                <div>Errores: <span id="errors" style="color: #fca5a5;">0</span>/20</div>
+                <div>Perdidos: <span id="lost" style="color: #fca5a5;">0</span>/20</div>
+                <button class="btn-pause" onclick="togglePause()" id="pause-btn" style="margin-top:4px;">Pausa ⏸️</button>
+            </div>
         </div>
 
         <div id="bonus-banner">🎉 ¡BONUS TRACK! Productos Varios de Farmacia 🎉</div>
@@ -251,7 +302,6 @@
     </footer>
 
     <script>
-        // Productos Especiales Bonus Track (Niveles 20, 40, 60, 80)
         const bonusItems = [
             "Desodorante", "Papel Higiénico", "Consolador",
             "Vaselina", "Condones", "Shampoo", "Preservativos",
@@ -259,7 +309,6 @@
             "Jabón Neutro", "Gel Íntimo", "Enjuague Bocal", "Cepillo Dental"
         ];
 
-        // Banco de medicamentos estándar (Cada 5 niveles desbloquea un bloque)
         const medPools = [
             ["Paracetamol", "Amoxicilina", "Lorazepam", "Ibuprofeno", "Amlodipino"],
             ["Atorvastatina", "Levotiroxina", "Telmisartán", "Gliclazida", "Clonazepam"],
@@ -287,26 +336,30 @@
         let score = 0;
         let servedCount = 0;
         let lostCount = 0;
+        let errorCount = 0;
+        let retriesLeft = 2; // 2 intentos por nivel
+        
         let holding = null;
         let customers = [];
         let customerIdCounter = 0;
         let isPaused = false;
+        let isGameOver = false;
         let isBonusLevel = false;
 
         let availableMeds = [];
         let displayedMeds = [];
+        let expBonusMed = ""; // Medicamento aleatorio que da más EXP/puntos en el nivel
 
         function checkBonusLevel() {
             return [20, 40, 60, 80].includes(currentLevel);
         }
 
-        // Calcula cuántos items máximos entran al estante según el nivel (de 4 a 16)
         function getMaxShelfCapacity() {
             if (currentLevel <= 3) return 4;
             if (currentLevel <= 7) return 6;
             if (currentLevel <= 12) return 8;
             if (currentLevel <= 18) return 12;
-            return 16; // Límite estricto de 16 productos
+            return 16;
         }
 
         function updateAvailableMeds() {
@@ -324,15 +377,17 @@
                     availableMeds = availableMeds.concat(medPools[i]);
                 }
             }
+
+            // Seleccionar 1 medicamento aleatorio de este nivel para dar Puntos Extra (EXP)
+            expBonusMed = availableMeds[Math.floor(Math.random() * availableMeds.length)];
+
             shuffleShelves();
         }
 
         function shuffleShelves() {
             const capacity = getMaxShelfCapacity();
-            // Desordenar todo el pozo disponible
             let shuffledPool = [...availableMeds].sort(() => Math.random() - 0.5);
 
-            // Asegurar que si hay clientes esperando, sus medicamentos solicitados estén SIEMPRE en el estante
             const activeCustomerMeds = customers.map(c => c.med);
             let selected = [];
 
@@ -342,14 +397,12 @@
                 }
             });
 
-            // Llenar el resto de los lugares hasta el límite de capacidad
             shuffledPool.forEach(med => {
                 if (!selected.includes(med) && selected.length < capacity) {
                     selected.push(med);
                 }
             });
 
-            // Desordenar de nuevo la selección final
             displayedMeds = selected.sort(() => Math.random() - 0.5);
             renderShelves();
         }
@@ -368,9 +421,8 @@
             });
         }
 
-        // Rotación de productos en el estante cada 10 segundos
         function dynamicShelfShift() {
-            if (isPaused) return;
+            if (isPaused || isGameOver) return;
             const btns = document.querySelectorAll('.med-btn');
             if (btns.length === 0) return;
 
@@ -384,7 +436,7 @@
         }
 
         function pickMed(med) {
-            if (isPaused) return;
+            if (isPaused || isGameOver) return;
             holding = med;
             document.getElementById('holding-item').innerText = med;
         }
@@ -398,14 +450,12 @@
         }
 
         function spawnCustomer() {
-            if (isPaused) return;
+            if (isPaused || isGameOver) return;
 
             const maxAllowed = getMaxCustomers();
             if (customers.length >= maxAllowed) return;
 
-            // Seleccionar únicamente entre los productos visibles en el estante
             const randomMed = displayedMeds[Math.floor(Math.random() * displayedMeds.length)];
-            
             const baseTime = Math.max(12 - (currentLevel * 0.1), 3.5);
 
             const customer = {
@@ -446,28 +496,48 @@
             });
         }
 
+        function triggerExpPopup() {
+            const popup = document.getElementById('exp-popup');
+            popup.style.display = 'block';
+            setTimeout(() => { popup.style.display = 'none'; }, 1000);
+        }
+
         function serveCustomer(id) {
-            if (isPaused || !holding) return;
+            if (isPaused || isGameOver || !holding) return;
 
             const index = customers.findIndex(c => c.id === id);
             if (index === -1) return;
 
             if (customers[index].med === holding) {
-                const bonusPoints = isBonusLevel ? 200 : 100;
-                score += bonusPoints + Math.floor(customers[index].timeRight * 10);
+                let basePoints = isBonusLevel ? 200 : 100;
+                
+                // Si entregó el producto con EXP extra de este nivel
+                if (holding === expBonusMed) {
+                    basePoints = Math.floor(basePoints * 1.5);
+                    triggerExpPopup();
+                }
+
+                score += basePoints + Math.floor(customers[index].timeRight * 10);
                 servedCount++;
                 
-                // Avanzar de nivel cada 5 atendidos
                 const newLevel = Math.min(100, Math.floor(servedCount / 5) + 1);
                 if (newLevel !== currentLevel) {
                     currentLevel = newLevel;
+                    retriesLeft = 2; // Reiniciar reintentos para el nuevo nivel
                     updateAvailableMeds();
                 }
 
                 customers.splice(index, 1);
             } else {
+                errorCount++;
                 score = Math.max(0, score - 50);
-                alert('❌ ¡Artículo/Medicamento equivocado!');
+                
+                if (errorCount >= 20) {
+                    triggerGameOver("Has superado el límite de 20 equivocaciones.");
+                    return;
+                } else {
+                    alert(`❌ ¡Medicamento equivocado! (Error ${errorCount}/20)`);
+                }
             }
 
             holding = null;
@@ -476,22 +546,78 @@
             renderCustomers();
         }
 
+        function triggerGameOver(reason) {
+            isGameOver = true;
+            const overlay = document.getElementById('gameover-overlay');
+            const reasonEl = document.getElementById('go-reason');
+            const attemptsEl = document.getElementById('go-attempts');
+            const btnEl = document.getElementById('go-btn');
+            const titleEl = document.getElementById('go-title');
+
+            reasonEl.innerText = reason;
+
+            if (retriesLeft > 0) {
+                titleEl.innerText = "❌ ¡NIVEL FALLIDO!";
+                titleEl.style.color = "#f59e0b";
+                attemptsEl.innerText = `Oportunidades restantes para este nivel: ${retriesLeft}`;
+                btnEl.innerText = `Reintentar Nivel ${currentLevel}`;
+            } else {
+                titleEl.innerText = "💀 GAME OVER DEFINITIVO";
+                titleEl.style.color = "#ef4444";
+                attemptsEl.innerText = "Te has quedado sin oportunidades en este nivel. Volverás al Nivel 1.";
+                btnEl.innerText = "Reiniciar desde Nivel 1";
+            }
+
+            overlay.style.display = 'flex';
+        }
+
+        function handleGameOverAction() {
+            document.getElementById('gameover-overlay').style.display = 'none';
+            isGameOver = false;
+
+            if (retriesLeft > 0) {
+                // Reintentar el mismo nivel
+                retriesLeft--;
+            } else {
+                // Reiniciar completamente desde el nivel 1
+                currentLevel = 1;
+                score = 0;
+                servedCount = 0;
+                retriesLeft = 2;
+            }
+
+            // Resetear estadísticas del nivel actual
+            errorCount = 0;
+            lostCount = 0;
+            customers = [];
+            holding = null;
+            document.getElementById('holding-item').innerText = 'Nada';
+
+            updateAvailableMeds();
+            updateHUD();
+            spawnCustomer();
+            spawnCustomer();
+        }
+
         function updateHUD() {
             document.getElementById('level').innerText = currentLevel;
             document.getElementById('score').innerText = score;
             document.getElementById('served').innerText = servedCount;
             document.getElementById('lost').innerText = lostCount;
+            document.getElementById('errors').innerText = errorCount;
+            document.getElementById('retries').innerText = retriesLeft;
         }
 
         function togglePause() {
+            if (isGameOver) return;
             isPaused = !isPaused;
             document.getElementById('pause-overlay').style.display = isPaused ? 'flex' : 'none';
             document.getElementById('pause-btn').innerText = isPaused ? 'Reanudar ▶️' : 'Pausa ⏸️';
         }
 
-        // Bucle del temporizador principal
+        // Temporizador principal
         setInterval(() => {
-            if (isPaused) return;
+            if (isPaused || isGameOver) return;
 
             for (let i = customers.length - 1; i >= 0; i--) {
                 customers[i].timeRight -= 0.1;
@@ -499,6 +625,11 @@
                     customers.splice(i, 1);
                     lostCount++;
                     score = Math.max(0, score - 30);
+                    
+                    if (lostCount >= 20) {
+                        triggerGameOver("Has perdido a 20 pacientes por demorarte demasiado.");
+                        return;
+                    }
                     updateHUD();
                 }
             }
@@ -516,7 +647,7 @@
             }, getSpawnInterval());
         }
 
-        // Rotación de estante ajustada a 10 segundos
+        // Rotación de estante cada 10 segundos
         setInterval(dynamicShelfShift, 10000);
 
         // Inicialización
