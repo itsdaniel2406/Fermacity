@@ -20,13 +20,16 @@
         }
 
         #hud {
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
             background: #0284c7;
             color: white;
-            padding: 10px 15px;
+            padding: 10px;
             border-radius: 8px;
             font-weight: bold;
+            font-size: 0.85rem;
+            text-align: center;
             margin-bottom: 15px;
         }
 
@@ -53,6 +56,9 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
             gap: 8px;
+            max-height: 320px;
+            overflow-y: auto;
+            padding-right: 5px;
         }
 
         .med-btn {
@@ -61,7 +67,7 @@
             border-radius: 6px;
             padding: 8px 5px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             text-align: center;
             font-weight: 600;
             color: #0369a1;
@@ -92,7 +98,7 @@
         .customer-info {
             display: flex;
             justify-content: space-between;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: bold;
         }
 
@@ -111,7 +117,7 @@
             transition: width 0.1s linear, background-color 0.3s;
         }
 
-        /* Mano de Fernanda */
+        /* Status de Fernanda */
         #hand-status {
             margin-top: 15px;
             background: #f1f5f9;
@@ -130,18 +136,20 @@
 
     <div id="game-board">
         <div id="hud">
-            <span>Puntos: <span id="score">0</span></span>
-            <span>Atendidos: <span id="served">0</span></span>
+            <div>Nivel: <span id="level">1</span>/100</div>
+            <div>Puntos: <span id="score">0</span></div>
+            <div>Atendidos: <span id="served">0</span></div>
+            <div>Perdidos: <span id="lost" style="color: #fca5a5;">0</span></div>
         </div>
 
         <div class="main-stage">
             <div>
-                <div class="section-title">📦 Estante de Medicamentos</div>
+                <div class="section-title">📦 Estante (<span id="med-count">0</span> tipos)</div>
                 <div class="med-grid" id="shelves"></div>
             </div>
 
             <div>
-                <div class="section-title">👥 Clientes Esperando (Haz clic para entregar)</div>
+                <div class="section-title">👥 Clientes Esperando</div>
                 <div id="customers-container"></div>
             </div>
         </div>
@@ -152,27 +160,63 @@
     </div>
 
     <script>
-        const medsList = [
-            "Paracetamol 500mg", "Amoxicilina D-S", "Lorazepam 2mg",
-            "Atorvastatina 20mg", "Levotiroxina 100mcg", "Telmisartán 80mg",
-            "Amlodipino 5mg", "Gliclazida 60mg", "Ibuprofeno 600mg"
+        // Banco de medicamentos organizados por dificultad (bloques de 10 niveles)
+        const medPools = [
+            // Niveles 1-10
+            ["Paracetamol", "Amoxicilina", "Lorazepam", "Ibuprofeno", "Amlodipino"],
+            // Niveles 11-20
+            ["Atorvastatina", "Levotiroxina", "Telmisartán", "Gliclazida", "Clonazepam"],
+            // Niveles 21-30
+            ["Hidroclorotiazida", "Ciprofloxacino", "Metoclopramida", "Ezetimiba"],
+            // Niveles 31-40
+            ["Sulfametoxazol", "Nitrofurantoína", "Levosulpirida", "Dexketoprofeno"],
+            // Niveles 41-50
+            ["Dextrometorfano", "Clufenanamato", "Butilhioscina", "Betametasona"],
+            // Niveles 51-60
+            ["Dexmedetomidina", "Levetiracetam", "Pipemídico Ácido", "Moxifloxacino"],
+            // Niveles 61-70
+            ["Eslicarbazepina", "Acetilcisteína", "Fondaparinux", "Cloperastina"],
+            // Niveles 71-80
+            ["Piperacilina-Tazobactam", "Trimetoprima", "Suxametonio", "Zuclopentixol"],
+            // Niveles 81-90
+            ["Lercanidipino", "Sildenafil-Tadalafil", "Fenilbutazona", "Trihexifenidilo"],
+            // Niveles 91-100 (Extremos)
+            ["Clanobutina", "Metilprednisolona", "Ciclofosfamidasa", "Desoximetasona"]
         ];
 
-        let holding = null;
+        let currentLevel = 1;
         let score = 0;
         let servedCount = 0;
+        let lostCount = 0;
+        let holding = null;
         let customers = [];
         let customerIdCounter = 0;
 
-        // Cargar medicamentos en estante
-        const shelvesEl = document.getElementById('shelves');
-        medsList.forEach(med => {
-            const btn = document.createElement('button');
-            btn.className = 'med-btn';
-            btn.innerText = med;
-            btn.onclick = () => pickMed(med);
-            shelvesEl.appendChild(btn);
-        });
+        let availableMeds = [];
+
+        function updateAvailableMeds() {
+            // Se calcula qué bloques desbloquear según el nivel
+            const tier = Math.min(Math.floor((currentLevel - 1) / 10) + 1, medPools.length);
+            availableMeds = [];
+            for (let i = 0; i < tier; i++) {
+                availableMeds = availableMeds.concat(medPools[i]);
+            }
+            renderShelves();
+        }
+
+        function renderShelves() {
+            const shelvesEl = document.getElementById('shelves');
+            shelvesEl.innerHTML = '';
+            document.getElementById('med-count').innerText = availableMeds.length;
+
+            availableMeds.forEach(med => {
+                const btn = document.createElement('button');
+                btn.className = 'med-btn';
+                btn.innerText = med;
+                btn.onclick = () => pickMed(med);
+                shelvesEl.appendChild(btn);
+            });
+        }
 
         function pickMed(med) {
             holding = med;
@@ -180,14 +224,18 @@
         }
 
         function spawnCustomer() {
-            if (customers.length >= 3) return; // Máximo 3 clientes a la vez
+            if (customers.length >= 4) return; // Máximo 4 clientes a la vez
 
-            const randomMed = medsList[Math.floor(Math.random() * medsList.length)];
+            const randomMed = availableMeds[Math.floor(Math.random() * availableMeds.length)];
+            
+            // A mayor nivel, menos tiempo de paciencia (mínimo 4.5 segundos)
+            const baseTime = Math.max(12 - (currentLevel * 0.08), 4.5);
+
             const customer = {
                 id: ++customerIdCounter,
                 med: randomMed,
-                maxTime: 12, // 12 segundos para responder
-                timeRight: 12
+                maxTime: baseTime,
+                timeRight: baseTime
             };
 
             customers.push(customer);
@@ -203,14 +251,14 @@
                 card.className = 'customer-card';
                 card.onclick = () => serveCustomer(c.id);
 
-                const pct = (c.timeRight / c.maxTime) * 100;
+                const pct = Math.max(0, (c.timeRight / c.maxTime) * 100);
                 let color = '#22c55e';
                 if (pct < 50) color = '#eab308';
                 if (pct < 25) color = '#ef4444';
 
                 card.innerHTML = `
                     <div class="customer-info">
-                        <span>👤 Cliente solicita:</span>
+                        <span>👤 Cliente:</span>
                         <span style="color:#d97706">${c.med}</span>
                     </div>
                     <div class="timer-bar">
@@ -230,9 +278,17 @@
             if (customers[index].med === holding) {
                 score += 100 + Math.floor(customers[index].timeRight * 10);
                 servedCount++;
+                
+                // Subir de nivel cada 5 clientes atendidos (Hasta nivel 100)
+                const newLevel = Math.min(100, Math.floor(servedCount / 5) + 1);
+                if (newLevel !== currentLevel) {
+                    currentLevel = newLevel;
+                    updateAvailableMeds();
+                }
+
                 customers.splice(index, 1);
             } else {
-                score = Math.max(0, score - 50); // Penalización por remedio incorrecto
+                score = Math.max(0, score - 50);
                 alert('❌ ¡Medicamento equivocado!');
             }
 
@@ -243,26 +299,42 @@
         }
 
         function updateHUD() {
+            document.getElementById('level').innerText = currentLevel;
             document.getElementById('score').innerText = score;
             document.getElementById('served').innerText = servedCount;
+            document.getElementById('lost').innerText = lostCount;
         }
 
-        // Bucle del juego
+        // Bucle principal del temporizador
         setInterval(() => {
-            customers.forEach((c, index) => {
-                c.timeRight -= 0.1;
-                if (c.timeRight <= 0) {
-                    customers.splice(index, 1); // Se va enojado
+            for (let i = customers.length - 1; i >= 0; i--) {
+                customers[i].timeRight -= 0.1;
+                if (customers[i].timeRight <= 0) {
+                    customers.splice(i, 1); // Se va enojado
+                    lostCount++;
                     score = Math.max(0, score - 30);
                     updateHUD();
                 }
-            });
+            }
             renderCustomers();
         }, 100);
 
-        // Generar clientes cada 3.5 segundos
-        setInterval(spawnCustomer, 3500);
-        spawnCustomer();
+        // La velocidad con la que llegan nuevos clientes se incrementa con el nivel
+        function getSpawnInterval() {
+            return Math.max(1200, 3500 - (currentLevel * 25));
+        }
+
+        function scheduleNextSpawn() {
+            setTimeout(() => {
+                spawnCustomer();
+                scheduleNextSpawn();
+            }, getSpawnInterval());
+        }
+
+        // Inicialización del juego
+        updateAvailableMeds();
+        updateHUD();
+        scheduleNextSpawn();
     </script>
 </body>
 </html>
