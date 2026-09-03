@@ -3,40 +3,266 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fermacity - ¡Farmacia Frenética!</title>
+    <title>Fermacity - ¡Despacha rápido, Fernanda!</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f8ff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        #game-container { width: 800px; height: 600px; background-color: white; border: 4px solid #0056b3; border-radius: 10px; position: relative; overflow: hidden; display: flex; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: #e0f2fe; display: flex; flex-direction: column; align-items: center; padding: 10px; }
+        h1 { color: #0284c7; margin-bottom: 10px; font-size: 1.5rem; text-align: center; }
         
-        /* Farmacéutica Fernanda */
-        #fernanda { width: 60px; height: 100px; background-color: #fff; border: 2px solid #007bff; position: absolute; bottom: 50px; left: 370px; border-radius: 10px; text-align: center; color: #007bff; font-weight: bold; padding-top: 10px; }
-        #fernanda::after { content: '👩‍⚕️ F'; font-size: 2em; display: block; }
-        
-        /* Estanterías */
-        #shelves { width: 200px; height: 100%; background-color: #e6f7ff; border-right: 2px solid #b3e0ff; padding: 10px; box-sizing: border-box; }
-        .shelf-item { background-color: white; border: 1px solid #cceeff; border-radius: 5px; padding: 5px; margin-bottom: 5px; cursor: pointer; text-align: center; font-size: 0.8em; }
-        .shelf-item:hover { background-color: #e0f2fe; }
-        
-        /* Zona de Clientes */
-        #customer-zone { flex: 1; position: relative; padding: 10px; }
-        #counter { height: 10px; width: 100%; background-color: #007bff; position: absolute; bottom: 150px; left: 0; }
-        .customer { width: 60px; height: 90px; background-color: #ffe082; border: 2px solid #fbc02d; position: absolute; bottom: 160px; border-radius: 10px; text-align: center; color: #fbc02d; font-weight: bold; padding-top: 10px; transition: left 0.5s; cursor: pointer; }
-        .customer::after { content: '👤 C'; font-size: 2em; display: block; }
-        .patience-bar { width: 100%; height: 5px; background-color: #ffcccc; position: absolute; top: -10px; left: 0; border-radius: 3px; }
-        .patience-fill { height: 100%; background-color: #4caf50; border-radius: 3px; transition: width 0.1s linear; }
+        #game-board {
+            width: 100%;
+            max-width: 800px;
+            background: #ffffff;
+            border: 4px solid #0284c7;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
 
-        /* UI de Puntuación y Estado */
-        #hud { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.8); padding: 5px 10px; border-radius: 5px; text-align: right; }
-        #order-box { position: absolute; bottom: 10px; left: 220px; background: #eee; padding: 10px; border-radius: 5px; border: 1px solid #ccc; width: 200px; text-align: center; font-size: 0.9em; min-height: 40px;}
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            background: #0284c7;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
 
+        .main-stage {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media(max-width: 600px) {
+            .main-stage { grid-template-columns: 1fr; }
+        }
+
+        .section-title {
+            font-weight: bold;
+            color: #0369a1;
+            margin-bottom: 8px;
+            border-bottom: 2px solid #bae6fd;
+            padding-bottom: 4px;
+        }
+
+        /* Estantería de medicamentos */
+        .med-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 8px;
+        }
+
+        .med-btn {
+            background: #f0f9ff;
+            border: 2px solid #38bdf8;
+            border-radius: 6px;
+            padding: 8px 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-align: center;
+            font-weight: 600;
+            color: #0369a1;
+            transition: all 0.1s;
+        }
+
+        .med-btn:active { background: #38bdf8; color: white; transform: scale(0.96); }
+
+        /* Fila de clientes */
+        #customers-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 200px;
+        }
+
+        .customer-card {
+            background: #fffbebfb;
+            border: 2px solid #f59e0b;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .customer-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .timer-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .timer-fill {
+            height: 100%;
+            background: #22c55e;
+            width: 100%;
+            transition: width 0.1s linear, background-color 0.3s;
+        }
+
+        /* Mano de Fernanda */
+        #hand-status {
+            margin-top: 15px;
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            color: #334155;
+            border: 1px dashed #94a3b8;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Fermacity - ¡Despacha rápido, Fernanda!</h1>
-    <div id="game-container">
-        <div id="shelves">
-            <h3>Medicamentos</h3>
-            <div class="shelf-item" data-med="Paracetamol (Genérico)">Paracetamol (Genérico)</div>
-            <div class="shelf-item" data-med="Amoxicilina">Amoxicilina</div>
-            <div class="shelf-item" data-med="Lorazepam">Lorazepam
+    <h1>💊 Fermacity: ¡Atiende Fernanda!</h1>
+
+    <div id="game-board">
+        <div id="hud">
+            <span>Puntos: <span id="score">0</span></span>
+            <span>Atendidos: <span id="served">0</span></span>
+        </div>
+
+        <div class="main-stage">
+            <div>
+                <div class="section-title">📦 Estante de Medicamentos</div>
+                <div class="med-grid" id="shelves"></div>
+            </div>
+
+            <div>
+                <div class="section-title">👥 Clientes Esperando (Haz clic para entregar)</div>
+                <div id="customers-container"></div>
+            </div>
+        </div>
+
+        <div id="hand-status">
+            👩‍⚕️ Fernanda tiene en mano: <span id="holding-item" style="color: #0284c7;">Nada</span>
+        </div>
+    </div>
+
+    <script>
+        const medsList = [
+            "Paracetamol 500mg", "Amoxicilina D-S", "Lorazepam 2mg",
+            "Atorvastatina 20mg", "Levotiroxina 100mcg", "Telmisartán 80mg",
+            "Amlodipino 5mg", "Gliclazida 60mg", "Ibuprofeno 600mg"
+        ];
+
+        let holding = null;
+        let score = 0;
+        let servedCount = 0;
+        let customers = [];
+        let customerIdCounter = 0;
+
+        // Cargar medicamentos en estante
+        const shelvesEl = document.getElementById('shelves');
+        medsList.forEach(med => {
+            const btn = document.createElement('button');
+            btn.className = 'med-btn';
+            btn.innerText = med;
+            btn.onclick = () => pickMed(med);
+            shelvesEl.appendChild(btn);
+        });
+
+        function pickMed(med) {
+            holding = med;
+            document.getElementById('holding-item').innerText = med;
+        }
+
+        function spawnCustomer() {
+            if (customers.length >= 3) return; // Máximo 3 clientes a la vez
+
+            const randomMed = medsList[Math.floor(Math.random() * medsList.length)];
+            const customer = {
+                id: ++customerIdCounter,
+                med: randomMed,
+                maxTime: 12, // 12 segundos para responder
+                timeRight: 12
+            };
+
+            customers.push(customer);
+            renderCustomers();
+        }
+
+        function renderCustomers() {
+            const container = document.getElementById('customers-container');
+            container.innerHTML = '';
+
+            customers.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'customer-card';
+                card.onclick = () => serveCustomer(c.id);
+
+                const pct = (c.timeRight / c.maxTime) * 100;
+                let color = '#22c55e';
+                if (pct < 50) color = '#eab308';
+                if (pct < 25) color = '#ef4444';
+
+                card.innerHTML = `
+                    <div class="customer-info">
+                        <span>👤 Cliente solicita:</span>
+                        <span style="color:#d97706">${c.med}</span>
+                    </div>
+                    <div class="timer-bar">
+                        <div class="timer-fill" style="width: ${pct}%; background-color: ${color};"></div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function serveCustomer(id) {
+            if (!holding) return;
+
+            const index = customers.findIndex(c => c.id === id);
+            if (index === -1) return;
+
+            if (customers[index].med === holding) {
+                score += 100 + Math.floor(customers[index].timeRight * 10);
+                servedCount++;
+                customers.splice(index, 1);
+            } else {
+                score = Math.max(0, score - 50); // Penalización por remedio incorrecto
+                alert('❌ ¡Medicamento equivocado!');
+            }
+
+            holding = null;
+            document.getElementById('holding-item').innerText = 'Nada';
+            updateHUD();
+            renderCustomers();
+        }
+
+        function updateHUD() {
+            document.getElementById('score').innerText = score;
+            document.getElementById('served').innerText = servedCount;
+        }
+
+        // Bucle del juego
+        setInterval(() => {
+            customers.forEach((c, index) => {
+                c.timeRight -= 0.1;
+                if (c.timeRight <= 0) {
+                    customers.splice(index, 1); // Se va enojado
+                    score = Math.max(0, score - 30);
+                    updateHUD();
+                }
+            });
+            renderCustomers();
+        }, 100);
+
+        // Generar clientes cada 3.5 segundos
+        setInterval(spawnCustomer, 3500);
+        spawnCustomer();
+    </script>
+</body>
+</html>
