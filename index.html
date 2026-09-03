@@ -7,7 +7,7 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #e0f2fe; display: flex; flex-direction: column; align-items: center; padding: 10px; min-height: 100vh; }
-        h1 { color: #0284c7; margin-bottom: 10px; font-size: 1.5rem; text-align: center; }
+        h1 { color: #0284c7; margin-bottom: 10px; font-size: 1.4rem; text-align: center; }
         
         #game-board {
             width: 100%;
@@ -15,53 +15,88 @@
             background: #ffffff;
             border: 4px solid #0284c7;
             border-radius: 12px;
-            padding: 15px;
+            padding: 12px;
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
             position: relative;
         }
 
+        /* HUD Compacto con Números Arriba y Texto Abajo */
         #hud {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
+            grid-template-columns: repeat(6, 1fr) auto;
+            gap: 6px;
             background: #0284c7;
-            color: white;
-            padding: 10px;
+            padding: 8px;
             border-radius: 8px;
-            font-weight: bold;
-            font-size: 0.8rem;
-            text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            align-items: center;
         }
 
-        .hud-row {
+        .hud-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            padding: 4px 2px;
+            text-align: center;
+            color: white;
             display: flex;
-            justify-content: space-around;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
+        }
+
+        .hud-value {
+            font-size: 0.9rem;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .hud-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            opacity: 0.9;
+            margin-top: 2px;
+            font-weight: 600;
         }
 
         .btn-pause {
             background: #f59e0b;
             color: white;
             border: none;
-            padding: 5px 10px;
+            padding: 6px 10px;
             border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             transition: background 0.2s;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .btn-pause:hover { background: #d97706; }
+
+        @media(max-width: 600px) {
+            #hud {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .pause-card-cell {
+                grid-column: span 3;
+            }
+            .btn-pause {
+                width: 100%;
+                padding: 6px;
+            }
+        }
 
         .main-stage {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 12px;
         }
 
         @media(max-width: 600px) {
             .main-stage { grid-template-columns: 1fr; }
-            #hud { grid-template-columns: 1fr; }
         }
 
         .section-title {
@@ -70,6 +105,7 @@
             margin-bottom: 8px;
             border-bottom: 2px solid #bae6fd;
             padding-bottom: 4px;
+            font-size: 0.9rem;
         }
 
         /* Banner de Bonus Track */
@@ -79,10 +115,10 @@
             color: white;
             text-align: center;
             font-weight: bold;
-            padding: 6px;
+            padding: 5px;
             border-radius: 6px;
             margin-bottom: 10px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             animation: pulse 1s infinite alternate;
         }
 
@@ -91,12 +127,12 @@
             to { transform: scale(1.01); }
         }
 
-        /* Estantería optimizada de máximo 16 botones perfectamente visibles */
+        /* Estantería optimizada */
         .med-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            max-height: 360px;
+            gap: 6px;
+            max-height: 340px;
             overflow: hidden;
         }
 
@@ -104,7 +140,7 @@
             background: #f0f9ff;
             border: 2px solid #38bdf8;
             border-radius: 6px;
-            padding: 8px 4px;
+            padding: 7px 4px;
             cursor: pointer;
             font-size: 0.75rem;
             text-align: center;
@@ -131,18 +167,18 @@
         #customers-container {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            min-height: 200px;
+            gap: 8px;
+            min-height: 180px;
         }
 
         .customer-card {
             background: #fffbebfb;
             border: 2px solid #f59e0b;
             border-radius: 8px;
-            padding: 10px;
+            padding: 8px 10px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
             cursor: pointer;
             transition: transform 0.1s;
         }
@@ -154,13 +190,13 @@
         .customer-info {
             display: flex;
             justify-content: space-between;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: bold;
         }
 
         .timer-bar {
             width: 100%;
-            height: 8px;
+            height: 6px;
             background: #e5e7eb;
             border-radius: 4px;
             overflow: hidden;
@@ -175,12 +211,13 @@
 
         /* Status de Fernanda */
         #hand-status {
-            margin-top: 15px;
+            margin-top: 12px;
             background: #f1f5f9;
-            padding: 10px;
+            padding: 8px;
             border-radius: 8px;
             text-align: center;
             font-weight: bold;
+            font-size: 0.85rem;
             color: #334155;
             border: 1px dashed #94a3b8;
         }
@@ -200,14 +237,14 @@
             padding: 20px;
             text-align: center;
         }
-        .modal-overlay h2 { font-size: 1.8rem; margin-bottom: 10px; }
-        .modal-overlay p { margin-bottom: 15px; font-size: 1rem; }
+        .modal-overlay h2 { font-size: 1.6rem; margin-bottom: 10px; }
+        .modal-overlay p { margin-bottom: 15px; font-size: 0.95rem; }
 
         /* Pop-up flotante de EXP Bonus */
         #exp-popup {
             display: none;
             position: absolute;
-            bottom: 60px;
+            bottom: 50px;
             left: 50%;
             transform: translateX(-50%);
             background: #22c55e;
@@ -215,7 +252,7 @@
             padding: 6px 12px;
             border-radius: 20px;
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             animation: floatUp 1s ease-out;
             z-index: 5;
@@ -228,7 +265,7 @@
 
         /* Pie de página */
         footer {
-            margin-top: 15px;
+            margin-top: 12px;
             font-size: 0.75rem;
             font-weight: bold;
             text-align: center;
@@ -262,19 +299,34 @@
 
         <div id="exp-popup">⭐ ¡PRODUCTO ESTRELLA! +50% Puntos ⭐</div>
 
+        <!-- HUD Rediseñado: Números Arriba / Texto Abajo + Iconos -->
         <div id="hud">
-            <div>
-                <div>Nivel: <span id="level">1</span>/100</div>
-                <div>Puntos: <span id="score">0</span></div>
+            <div class="hud-card">
+                <span class="hud-value">🏆 <span id="level">1</span>/100</span>
+                <span class="hud-label">Nivel</span>
             </div>
-            <div>
-                <div>Atendidos: <span id="served">0</span></div>
-                <div>Reintentos: <span id="retries" style="color: #f59e0b;">2</span>/2</div>
+            <div class="hud-card">
+                <span class="hud-value">💎 <span id="score">0</span></span>
+                <span class="hud-label">Puntos</span>
             </div>
-            <div>
-                <div>Errores: <span id="errors" style="color: #fca5a5;">0</span>/20</div>
-                <div>Perdidos: <span id="lost" style="color: #fca5a5;">0</span>/20</div>
-                <button class="btn-pause" onclick="togglePause()" id="pause-btn" style="margin-top:4px;">Pausa ⏸️</button>
+            <div class="hud-card">
+                <span class="hud-value">✅ <span id="served">0</span></span>
+                <span class="hud-label">Atendidos</span>
+            </div>
+            <div class="hud-card">
+                <span class="hud-value" style="color: #fef08a;">🔄 <span id="retries">2</span>/2</span>
+                <span class="hud-label">Reintentos</span>
+            </div>
+            <div class="hud-card">
+                <span class="hud-value" style="color: #fca5a5;">❌ <span id="errors">0</span>/20</span>
+                <span class="hud-label">Errores</span>
+            </div>
+            <div class="hud-card">
+                <span class="hud-value" style="color: #fca5a5;">📉 <span id="lost">0</span>/20</span>
+                <span class="hud-label">Perdidos</span>
+            </div>
+            <div class="pause-card-cell">
+                <button class="btn-pause" onclick="togglePause()" id="pause-btn">Pausa ⏸️</button>
             </div>
         </div>
 
@@ -337,7 +389,7 @@
         let servedCount = 0;
         let lostCount = 0;
         let errorCount = 0;
-        let retriesLeft = 2; // 2 intentos por nivel
+        let retriesLeft = 2;
         
         let holding = null;
         let customers = [];
@@ -348,7 +400,7 @@
 
         let availableMeds = [];
         let displayedMeds = [];
-        let expBonusMed = ""; // Medicamento aleatorio que da más EXP/puntos en el nivel
+        let expBonusMed = "";
 
         function checkBonusLevel() {
             return [20, 40, 60, 80].includes(currentLevel);
@@ -378,9 +430,7 @@
                 }
             }
 
-            // Seleccionar 1 medicamento aleatorio de este nivel para dar Puntos Extra (EXP)
             expBonusMed = availableMeds[Math.floor(Math.random() * availableMeds.length)];
-
             shuffleShelves();
         }
 
@@ -511,7 +561,6 @@
             if (customers[index].med === holding) {
                 let basePoints = isBonusLevel ? 200 : 100;
                 
-                // Si entregó el producto con EXP extra de este nivel
                 if (holding === expBonusMed) {
                     basePoints = Math.floor(basePoints * 1.5);
                     triggerExpPopup();
@@ -523,7 +572,7 @@
                 const newLevel = Math.min(100, Math.floor(servedCount / 5) + 1);
                 if (newLevel !== currentLevel) {
                     currentLevel = newLevel;
-                    retriesLeft = 2; // Reiniciar reintentos para el nuevo nivel
+                    retriesLeft = 2;
                     updateAvailableMeds();
                 }
 
@@ -576,17 +625,14 @@
             isGameOver = false;
 
             if (retriesLeft > 0) {
-                // Reintentar el mismo nivel
                 retriesLeft--;
             } else {
-                // Reiniciar completamente desde el nivel 1
                 currentLevel = 1;
                 score = 0;
                 servedCount = 0;
                 retriesLeft = 2;
             }
 
-            // Resetear estadísticas del nivel actual
             errorCount = 0;
             lostCount = 0;
             customers = [];
@@ -615,7 +661,6 @@
             document.getElementById('pause-btn').innerText = isPaused ? 'Reanudar ▶️' : 'Pausa ⏸️';
         }
 
-        // Temporizador principal
         setInterval(() => {
             if (isPaused || isGameOver) return;
 
@@ -647,10 +692,8 @@
             }, getSpawnInterval());
         }
 
-        // Rotación de estante cada 10 segundos
         setInterval(dynamicShelfShift, 10000);
 
-        // Inicialización
         updateAvailableMeds();
         updateHUD();
         spawnCustomer();
