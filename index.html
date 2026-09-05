@@ -299,7 +299,7 @@
 
         <div id="exp-popup">⭐ ¡PRODUCTO ESTRELLA! +50% Puntos ⭐</div>
 
-        <!-- HUD Ultra Compacto -->
+        <!-- HUD Compacto -->
         <div id="hud">
             <div class="hud-card">
                 <span class="hud-value">🏆 <span id="level">1</span>/100</span>
@@ -406,11 +406,14 @@
             return [20, 40, 60, 80].includes(currentLevel);
         }
 
+        // --- REBALANCEO DE CAPACIDAD DE ESTANTE ---
         function getMaxShelfCapacity() {
-            if (currentLevel <= 3) return 4;
-            if (currentLevel <= 7) return 6;
-            if (currentLevel <= 12) return 8;
-            if (currentLevel <= 18) return 12;
+            if (currentLevel <= 5) return 4;
+            if (currentLevel <= 12) return 6;
+            if (currentLevel <= 20) return 8;
+            if (currentLevel <= 30) return 10;
+            if (currentLevel <= 45) return 12;
+            if (currentLevel <= 65) return 14;
             return 16;
         }
 
@@ -491,12 +494,12 @@
             document.getElementById('holding-item').innerText = med;
         }
 
+        // --- REBALANCEO DE CANTIDAD DE CLIENTES ---
         function getMaxCustomers() {
-            if (currentLevel < 5) return 2;
-            if (currentLevel < 15) return 3;
-            if (currentLevel < 30) return 4;
-            if (currentLevel < 50) return 5;
-            return 6;
+            if (currentLevel <= 8) return 2;
+            if (currentLevel <= 22) return 3;
+            if (currentLevel <= 45) return 4;
+            return 5;
         }
 
         function spawnCustomer() {
@@ -506,7 +509,10 @@
             if (customers.length >= maxAllowed) return;
 
             const randomMed = displayedMeds[Math.floor(Math.random() * displayedMeds.length)];
-            const baseTime = Math.max(12 - (currentLevel * 0.1), 3.5);
+            
+            // --- REBALANCEO TIEMPO DE ESPERA DE PACIENTES ---
+            // Mucho más tiempo al inicio (20s) y baja súper suave hasta mínimo 6s
+            const baseTime = Math.max(20 - (currentLevel * 0.15), 6.0);
 
             const customer = {
                 id: ++customerIdCounter,
@@ -681,8 +687,9 @@
             renderCustomers();
         }, 100);
 
+        // --- REBALANCEO FRECUENCIA DE LLEGADA ---
         function getSpawnInterval() {
-            return Math.max(800, 2500 - (currentLevel * 25));
+            return Math.max(1200, 3800 - (currentLevel * 30));
         }
 
         function scheduleNextSpawn() {
@@ -692,7 +699,8 @@
             }, getSpawnInterval());
         }
 
-        setInterval(dynamicShelfShift, 10000);
+        // Rotación de estante cada 18 segundos (más calmado)
+        setInterval(dynamicShelfShift, 18000);
 
         updateAvailableMeds();
         updateHUD();
